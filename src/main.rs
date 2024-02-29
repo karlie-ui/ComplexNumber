@@ -65,8 +65,14 @@ impl Add<&ComplexNumber> for &ComplexNumber {
         ComplexNumber::new(self.re + other.re, self.im + other.im)
     }
 }
+impl Add<f64> for &ComplexNumber {
+    type Output = ComplexNumber;
+    fn add(self, other: f64) -> ComplexNumber {
+        ComplexNumber::new(self.re + other, self.im)
+    }
+}
 
-/// '+' operator for ComplexNumber
+/// '-' operator for ComplexNumber
 impl Sub<&ComplexNumber> for &ComplexNumber {
     type Output = ComplexNumber;
     fn sub(self, other: &ComplexNumber) -> ComplexNumber {
@@ -74,7 +80,7 @@ impl Sub<&ComplexNumber> for &ComplexNumber {
     }
 }
 
-/// '+' operator for ComplexNumber
+/// '*' operator for ComplexNumber
 impl Mul<&ComplexNumber> for &ComplexNumber {
     type Output = ComplexNumber;
     fn mul(self, other: &ComplexNumber) -> ComplexNumber {
@@ -84,7 +90,7 @@ impl Mul<&ComplexNumber> for &ComplexNumber {
     }
 }
 
-/// '+' operator for ComplexNumber
+/// '/' operator for ComplexNumber
 impl Div<&ComplexNumber> for &ComplexNumber {
     type Output = ComplexNumber;
     fn div(self, other: &ComplexNumber) -> ComplexNumber {
@@ -92,6 +98,11 @@ impl Div<&ComplexNumber> for &ComplexNumber {
         let arg = self.arg-other.arg;
         ComplexNumber::new(z*arg.cos(), z*arg.sin())
     }
+}
+
+/// Function getting user input (not finished)
+fn get_user_input() {
+    
 }
 
 /// Testing function
@@ -113,7 +124,8 @@ fn main() {
     let mut z: ComplexNumber = &w + &v;
     println!("Number z=w+v={}{:+}i", z.re, z.im);
     println!("arg(z)={}, |z|={}", z.arg*180./3.1415, z.z);
-    println!("### Arithmetic operators tests ### ");
+    let mut z: ComplexNumber = &v + 1.2;
+    println!("Number z=v+1.2={}{:+}i", z.re, z.im);
     z = &w - &v;
     println!("Number z=w-v={}{:+}i", z.re, z.im);
     z = &w * &v;
