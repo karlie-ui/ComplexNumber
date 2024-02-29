@@ -1,6 +1,7 @@
 #![allow(non_snake_case)] // inner attribute
 
 // use std::cmp::Ordering;
+use std::ops::{Add, Sub, Mul, Div};
 
 /// Type enum (type of a number)
 enum Type {
@@ -18,25 +19,27 @@ impl Type {
     }
 }
 
-/*
-trait Number <T, U> {
-    fn new(r: T, i: U) -> ComplexNumber<T, U>;
+trait Number {
+    fn new(r: f64, i: f64) -> Self;
 }
-*/
 
 /// Structure representing a complex number
 struct ComplexNumber {
     re: f64,
     im: f64,
+    arg: f64,
+    z: f64,
     t: Type,
 }
 
 /// Buld-in functions for ComplexNumber structure
-impl ComplexNumber {
+impl Number for ComplexNumber {
     fn new(r: f64, i: f64) -> ComplexNumber {
         ComplexNumber {
             re: r,
             im: i,
+            z: (r*r+i*i).sqrt(),
+            arg: (i).atan2(r),
             t: match i as i64 {
                 0 => Type::Real,
                 _ => Type::Complex
@@ -55,20 +58,66 @@ impl PartialEq for ComplexNumber {
     }
 }
 
+/// '+' operator for ComplexNumber
+impl Add<&ComplexNumber> for &ComplexNumber {
+    type Output = ComplexNumber;
+    fn add(self, other: &ComplexNumber) -> ComplexNumber {
+        ComplexNumber::new(self.re + other.re, self.im + other.im)
+    }
+}
+
+/// '+' operator for ComplexNumber
+impl Sub<&ComplexNumber> for &ComplexNumber {
+    type Output = ComplexNumber;
+    fn sub(self, other: &ComplexNumber) -> ComplexNumber {
+        ComplexNumber::new(self.re - other.re, self.im - other.im)
+    }
+}
+
+/// '+' operator for ComplexNumber
+impl Mul<&ComplexNumber> for &ComplexNumber {
+    type Output = ComplexNumber;
+    fn mul(self, other: &ComplexNumber) -> ComplexNumber {
+        let z = self.z*other.z;
+        let arg = self.arg+other.arg;
+        ComplexNumber::new(z*arg.cos(), z*arg.sin())
+    }
+}
+
+/// '+' operator for ComplexNumber
+impl Div<&ComplexNumber> for &ComplexNumber {
+    type Output = ComplexNumber;
+    fn div(self, other: &ComplexNumber) -> ComplexNumber {
+        let z = self.z/other.z;
+        let arg = self.arg-other.arg;
+        ComplexNumber::new(z*arg.cos(), z*arg.sin())
+    }
+}
+
 /// Testing function
 fn main() {
     let u = ComplexNumber::new(2_f64, -1_f64);
-    let w = ComplexNumber::new(2_f64, 0_f64);
-    let v = ComplexNumber::new(3_f64, -1_f64);
-    let z = ComplexNumber::new(2_f64, -1_f64);
+    let w = ComplexNumber::new(2_f64, -1_f64);
+    let v = ComplexNumber::new(3_f64, 6_f64);
+    // let z = ComplexNumber::new(2_f64, -1_f64);
+    // let z = ComplexNumber::new(3_f64, -1_f64) + ComplexNumber::new(3_f64, -1_f64);
     println!("### Complex numbers ### ");
     println!("Number u={}{:+}i is {}", u.re, u.im, u.t.get());
     println!("Number w={}{:+}i is {}", w.re, w.im, w.t.get());
     println!("Number v={}{:+}i is {}", v.re, v.im, v.t.get());
-    println!("Number z={}{:+}i is {}", z.re, z.im, z.t.get());
     println!("### Logical operators tests ### ");
     println!("Are u and w equal? {}", match u == w {true => "Yes!", false => "No!"});
     println!("Are u and v equal? {}", match u == v {true => "Yes!", false => "No!"});
-    println!("Are u and z equal? {}", match u == z {true => "Yes!", false => "No!"});
     println!("Are w and v different? {}", match u != v {true => "Yes!", false => "No!"});
+    println!("### Arithmetic operators tests ### ");
+    let mut z: ComplexNumber = &w + &v;
+    println!("Number z=w+v={}{:+}i", z.re, z.im);
+    println!("arg(z)={}, |z|={}", z.arg*180./3.1415, z.z);
+    println!("### Arithmetic operators tests ### ");
+    z = &w - &v;
+    println!("Number z=w-v={}{:+}i", z.re, z.im);
+    z = &w * &v;
+    println!("Number z=w*v={:.2}{:+.2}i", z.re, z.im);
+    z = &w / &v;
+    println!("Number z=w/v={:.2}{:+.2}i", z.re, z.im);
 }
