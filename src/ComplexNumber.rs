@@ -2,12 +2,14 @@
 
 // use std::cmp::Ordering;
 use std::io;
+use std::io::{Write, BufReader, BufRead, ErrorKind};
 use std::ops::{Add, Div, Mul, Sub};
 use std::fmt;
 use derive_getters::Getters;
+use std::fs::File;
 
 /// Type enum (type of a number)
-enum Type {
+pub enum Type {
     Real,
     Complex,
 }
@@ -53,6 +55,9 @@ impl ComplexNumber {
                 _ => Type::Complex,
             },
         }
+    }
+    pub fn from_polar(m: f64, a: f64) -> ComplexNumber {
+        ComplexNumber::new(m * a.cos(), m * a.sin())
     }
 }
 
@@ -153,10 +158,45 @@ pub fn get_user_input() -> Result<ComplexNumber, ComplexNumber> {
     parse_complex(&input, '+')
 }
 
-// use crate::ComplexNumber::ComplexNumber::get_user_input;
-// use crate::ComplexNumber;
+/// Function writing data to file
+pub fn write_data(path: &str) {
+    println!("Writing data to: {path}");
+    let mut output = match File::create(path){
+        Ok(file) => file,
+        Err(err) => match err.kind() {
+            ErrorKind::NotFound => match File::create("rand.txt") {
+                Ok(fc) => fc,
+                Err(e) => panic!("Can't create file: {:?}", e),
+            },
+            _ => panic!("Problem opening file : {:?}", err),
+        },
+    };
+    write!(output, "Silna wichura\nłamiąc duże drzewa\ntrzciną zaledwie tylko kołysze.").expect("Failed to write ti file \'{file_name}\'");
+}
+
+/// Function reading data from file
+pub fn read_data(path: &str) {
+    println!("Reading data from: {path}");
+    let input = File::open(path).unwrap();
+    let buffered = BufReader::new(input);
+    for line in buffered.lines() {
+        println!("{}", line.unwrap());
+    }
+}
+
+/// Function reading complex data from file
+pub fn read_complex_data(path: &str) {
+    println!("Reading data from: {path}");
+    let input = File::open(path).unwrap();
+    let buffered = BufReader::new(input);
+    for line in buffered.lines() {
+        let mut x = line.unwrap().trim().split_whitespace();
+        println!("{:?}, {:?}", x.next(), x.next());
+    }
+}
 
 /// Testing function
+#[allow(unused)]
 pub fn test_CN() {
     let u = ComplexNumber::new(2_f64, -1_f64);
     let w = ComplexNumber::new(2_f64, -1_f64);
@@ -206,4 +246,17 @@ pub fn test_CN() {
         Err(xx) => xx
     };
     println!("x = {x}");
+}
+
+/// Function testing file IO
+#[allow(unused)]
+pub fn test_file_io() {
+    println!("### File IO tests ### ");
+    write_data("out_data.dat");
+    read_data("out_data.dat");
+    read_complex_data("complex_data.dat");
+    // let mut dat: [&ComplexNumber;100] = [&ComplexNumber::new(0., 0.);100];
+    // for i in 0..100 {
+    //     dat[i] = &ComplexNumber::from_polar(1., 3.1415/50.*(i as f64));
+    // }
 }
