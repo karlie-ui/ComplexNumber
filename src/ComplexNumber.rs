@@ -186,12 +186,22 @@ pub fn read_data(path: &str) {
 
 /// Function reading complex data from file
 pub fn read_complex_data(path: &str) {
-    println!("Reading data from: {path}");
+    println!("Reading complex data from: {path}");
     let input = File::open(path).unwrap();
     let buffered = BufReader::new(input);
     for line in buffered.lines() {
-        let mut x = line.unwrap().trim().split_whitespace();
-        println!("{:?}, {:?}", x.next(), x.next());
+        match line {
+            Ok(ln) => {
+                let n: Vec<&str> = ln.trim().split_whitespace().collect::<Vec<_>>();
+                let x = match parse_complex(&String::from(n[1]), '+') {
+                    Ok(i) => i,
+                    Err(_) => panic!()
+                };
+                let t: f64 = n[0].parse().unwrap();
+                println!("t: {}, x: {}, arg(x): {}", t, x, x.a*180./3.1415);
+            },
+            Err(_) => panic!()
+        };
     }
 }
 

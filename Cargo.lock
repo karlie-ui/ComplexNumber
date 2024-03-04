@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "complexNumber"
+name = "ComplexNumber"
 version = "0.1.0"
 dependencies = [
  "derive-getters",
