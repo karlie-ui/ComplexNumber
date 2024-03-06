@@ -1,12 +1,12 @@
 #![allow(non_snake_case)] // inner attribute
 
 // use std::cmp::Ordering;
-use std::io;
-use std::io::{Write, BufReader, BufRead, ErrorKind};
-use std::ops::{Add, Div, Mul, Sub};
-use std::fmt;
 use derive_getters::Getters;
+use std::fmt;
 use std::fs::File;
+use std::io;
+use std::io::{BufRead, BufReader, ErrorKind, Write};
+use std::ops::{Add, Div, Mul, Sub};
 
 /// Type enum (type of a number)
 pub enum Type {
@@ -121,47 +121,30 @@ impl fmt::Display for ComplexNumber {
 }
 
 /// Function parsing complex number
-fn parse_complex(num: &String, s: char) -> Result<ComplexNumber, ComplexNumber>  {
-    let num: &str = num.trim().trim_end_matches('i');
-    match num.find(s) {
-        Some(i) => Ok(ComplexNumber::new(
-            match num.get(0..i) {
-                Some(x) => match x.trim().parse() {
-                    Ok(xx) => xx,
-                    Err(_) => 0f64
-                },
-                None => 0f64,
-            },
-            match num.get(i+1..) {
-                Some(y) => match y.trim().parse() {
-                    Ok(yy) => yy,
-                    Err(_) => 0f64
-                },
-                None => 0f64,
-            },
-        )),
-        None => {
-            println!("Error in find(), None returned");
-            Err(ComplexNumber::new(0f64, 0f64))
-        }
-    }
+fn parse_complex(input: &str) -> ComplexNumber {
+    let num = input.trim().trim_end_matches(&['i', 'j']);
+    let n: (&str, &str) = num.split_at(num.rfind(&['+', '-']).unwrap());
+    ComplexNumber::new(
+        n.0.parse::<f64>().expect("Error in parsing"),
+        n.1.parse::<f64>().expect("Error in parsing"),
+    )
 }
 
 /// Function getting user input (not finished)
-pub fn get_user_input() -> Result<ComplexNumber, ComplexNumber> {
+pub fn get_user_input() -> ComplexNumber {
     println!("Please input a complex number in form a+bi");
     let mut input = String::new();
     io::stdin()
         .read_line(&mut input)
         .expect("Failed to read line");
     // println!("{num}");
-    parse_complex(&input, '+')
+    parse_complex(&input)
 }
 
 /// Function writing data to file
 pub fn write_data(path: &str) {
     println!("Writing data to: {path}");
-    let mut output = match File::create(path){
+    let mut output = match File::create(path) {
         Ok(file) => file,
         Err(err) => match err.kind() {
             ErrorKind::NotFound => match File::create("rand.txt") {
@@ -171,7 +154,11 @@ pub fn write_data(path: &str) {
             _ => panic!("Problem opening file : {:?}", err),
         },
     };
-    write!(output, "Silna wichura\nłamiąc duże drzewa\ntrzciną zaledwie tylko kołysze.").expect("Failed to write ti file \'{file_name}\'");
+    write!(
+        output,
+        "Silna wichura\nłamiąc duże drzewa\ntrzciną zaledwie tylko kołysze."
+    )
+    .expect("Failed to write ti file \'{file_name}\'");
 }
 
 /// Function reading data from file
@@ -193,14 +180,11 @@ pub fn read_complex_data(path: &str) {
         match line {
             Ok(ln) => {
                 let n: Vec<&str> = ln.trim().split_whitespace().collect::<Vec<_>>();
-                let x = match parse_complex(&String::from(n[1]), '+') {
-                    Ok(i) => i,
-                    Err(_) => panic!()
-                };
-                let t: f64 = n[0].parse().unwrap();
-                println!("t: {}, x: {}, arg(x): {}", t, x, x.a*180./3.1415);
-            },
-            Err(_) => panic!()
+                let x = parse_complex(n[1]);
+                let t = n[0].parse::<f64>().unwrap();
+                println!("t: {}, x: {}, arg(x): {}", t, x, x.a * 180. / 3.1415);
+            }
+            Err(_) => panic!(),
         };
     }
 }
@@ -251,10 +235,7 @@ pub fn test_CN() {
     println!("Number z=w*v={z}");
     z = &w / &v;
     println!("Number z=w/v={z}");
-    let x = match get_user_input() {
-        Ok(xx) => xx,
-        Err(xx) => xx
-    };
+    let x = get_user_input();
     println!("x = {x}");
 }
 
@@ -269,4 +250,68 @@ pub fn test_file_io() {
     // for i in 0..100 {
     //     dat[i] = &ComplexNumber::from_polar(1., 3.1415/50.*(i as f64));
     // }
+}
+
+/// Function testing parsing a complex number
+#[allow(unused)]
+pub fn test_CN_parsing() {
+    let u = parse_complex("    +3.42-1.213j   ");
+    println!(
+        "u={u}, Re[u]={}, Im[u]={}, Arg[u]={}, |u|={}",
+        u.r(),
+        u.i(),
+        u.a(),
+        u.m()
+    );
+    /*
+    #
+    ### OLD VERSIONS OF: parse_complex()
+    #
+    let num: &str = num.trim().trim_end_matches('i');
+    match num.find(s) {
+        Some(i) => Ok(ComplexNumber::new(
+            match num.get(0..i) {
+                Some(x) => match x.trim().parse() {
+                    Ok(xx) => xx,
+                    Err(_) => 0f64
+                },
+                None => 0f64,
+            },
+            match num.get(i+1..) {
+                Some(y) => match y.trim().parse() {
+                    Ok(yy) => yy,
+                    Err(_) => 0f64
+                },
+                None => 0f64,
+            },
+        )),
+        None => {
+            println!("Error in find(), None returned");
+            Err(ComplexNumber::new(0f64, 0f64))
+        }
+    }
+    #
+    #
+    #
+    println!("Input: {input}");
+    println!("Number: {num}");
+    let pcount = num.matches('+').count();
+    match pcount {
+        0 => {
+            println!("Negative imaginary part!");
+            let (x, y): (&str, &str) = num.split_at(num.rfind("-").unwrap());
+            println!("{}{:+}i", x.parse::<f64>().unwrap(), y.parse::<f64>().unwrap())
+        },
+        1 => {
+            println!("Dubious!");
+            let (x, y): (&str, &str) = num.split_at(num.rfind(&['+', '-']).unwrap());
+            println!("{}{:+}i", x.parse::<f64>().unwrap(), y.parse::<f64>().unwrap())
+        },
+        2.. => {
+            println!("Positive imaginary part!");
+            let (x, y): (&str, &str) = num.split_at(num.rfind("+").unwrap());
+            println!("{}{:+}i", x.parse::<f64>().unwrap(), y.parse::<f64>().unwrap())
+        },
+    };
+    */
 }
