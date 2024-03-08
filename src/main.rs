@@ -1,12 +1,13 @@
 #![allow(non_snake_case)] // inner attribute
 #![allow(unused_imports)]
 
-mod ComplexNumber;
-use ComplexNumber::{test_CN_parsing, test_file_io};
+mod cn;
+use crate::cn::complex_number;
+use complex_number::testing::{test_CN_parsing, test_file_io};
 
 #[allow(unused)]
 fn module_test() {
-    let u = ComplexNumber::ComplexNumber::new(2_f64, -1_f64);
+    let u = complex_number::ComplexNumber::new(2_f64, -1_f64);
     println!("### ComplexNumber created in main() ###");
     println!(
         "u={u}, Re[u]={}, Im[u]={}, Arg[u]={}, |u|={}",
